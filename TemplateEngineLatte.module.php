@@ -3,6 +3,7 @@
 namespace ProcessWire;
 
 use TemplateEngineLatte\TemplateEngineLatte as LatteEngine;
+use Latte\Bridges\Tracy\LattePanel;
 
 /**
  * Adds Latte templates to the TemplateEngineFactory module.
@@ -51,10 +52,18 @@ class TemplateEngineLatte extends WireData implements Module, ConfigurableModule
 
     public function init()
     {
+        require_once __DIR__ . '/vendor/autoload.php';
+
         /** @var \ProcessWire\TemplateEngineFactory $factory */
         $factory = $this->wire('modules')->get('TemplateEngineFactory');
 
-        $factory->registerEngine('Latte', new LatteEngine($factory->getArray(), $this->getArray()));
+        $latteEngine = new LatteEngine($factory->getArray(), $this->getArray());
+
+        $factory->registerEngine('Latte', $latteEngine);
+
+        if($this->modules->isInstalled("TracyDebugger")) {
+            LattePanel::initialize($latteEngine->getLatte());
+        }
     }
 
     private function setDefaultConfig()
